@@ -5,17 +5,13 @@ from PySide6 import QtCore, QtWidgets, QtGui
 class MyWidget(QtWidgets.QWidget):
     def __init__(self):
         super().__init__()
-
-        self.hello = ["Hallo Welt", "Hei maailma", "Hola Mundo", "Привет мир"]
-
-        # self.button = QtWidgets.QPushButton("Click me!")
-        # self.text = QtWidgets.QLabel("Hello World",
-        #                              alignment=QtCore.Qt.AlignCenter)
         self.tt = QtWidgets.QLineEdit()
-        self.setStyleSheet("* { background-color: #484848; color: white; font-weight: bold; font-family: consolas; font-size: 14px; }")
+        self.setStyleSheet("* { background-color: #484848; color: white; font-weight: bold; font-family: consolas; font-size: 14px; margin: 0px; padding: 0px; }")
         self.tt.setStyleSheet("border: none")
-
+        self.items = [None]
+        self.selected = 0
         self.layout = QtWidgets.QVBoxLayout(self)
+        self.layout.setContentsMargins(0,0,0,0)
         # self.layout.addWidget(self.text)
         # self.layout.addWidget(self.button)
         self.layout.addWidget(self.tt)
@@ -28,10 +24,32 @@ class MyWidget(QtWidgets.QWidget):
         self.text.setText(random.choice(self.hello))
 
     def addOption(self, txt):
-        self.layout.addWidget(QtWidgets.QLabel(txt, alignment=QtCore.Qt.AlignLeft))
+        new_label = QtWidgets.QLabel(txt, alignment=QtCore.Qt.AlignLeft)
+        self.items.append(new_label)
+        self.layout.addWidget(self.items[-1])
+    
+    def highlight(self, _id):
+        if (_id != 0):
+            self.items[_id].setStyleSheet("* { background-color: #ababab; color: black; }")
+    
+    def unlight(self, _id):
+        if (_id != 0):
+            self.items[_id].setStyleSheet("* { background-color: #484848; color: white; }")
+
 
     def keyPressEvent(self, e):
         if e.key() == QtCore.Qt.Key_Escape:
+            self.close()
+        elif e.key() == QtCore.Qt.Key_Down:
+            self.unlight(self.selected)
+            self.selected = self.selected + 1
+            self.highlight(self.selected)
+        elif e.key() == QtCore.Qt.Key_Up:
+            self.unlight(self.selected)
+            self.selected = self.selected - 1
+            self.highlight(self.selected)
+        elif e.key() == QtCore.Qt.Key_Return:
+            print(self.items[self.selected].text())
             self.close()
 
 
@@ -41,10 +59,11 @@ if __name__ == "__main__":
     widget = MyWidget()
     widget.resize(600, 40)
     widget.show()
-    # print(repr(sys.stdin.readlines()))
-    for line in sys.stdin.read().splitlines():
-        print(repr(line))
-        widget.addOption(line)
+    if (not sys.stdin.isatty()):
+        piped_input = sys.stdin.read().splitlines()
+        for line in piped_input:
+            widget.addOption(line)
         # widget.layout.addWidget(QtWidgets.QLabel(line, alignment=QtCore.Qt.AlignLeft))
         # widget.setStyleSheet("QLabel { border-style: solid; border-width: 2px; border-color: red; }")
+    # widget.items[-1].setStyleSheet("* { background-color: #ababab; color: black; }")
     sys.exit(app.exec_())
