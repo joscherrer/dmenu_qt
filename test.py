@@ -2,7 +2,7 @@ import sys
 import random
 from PySide6 import QtCore, QtWidgets, QtGui
 
-class MyWidget(QtWidgets.QWidget):
+class Dmenu(QtWidgets.QWidget):
     def __init__(self):
         super().__init__()
         self.tt = QtWidgets.QLineEdit()
@@ -54,16 +54,16 @@ class MyWidget(QtWidgets.QWidget):
 
 
 if __name__ == "__main__":
-    app = QtWidgets.QApplication([])
+    if (sys.stdin.isatty()):
+        sys.exit()
 
-    widget = MyWidget()
+    app = QtWidgets.QApplication([])
+    widget = Dmenu()
     widget.resize(600, 40)
     widget.show()
-    if (not sys.stdin.isatty()):
-        piped_input = sys.stdin.read().splitlines()
-        for line in piped_input:
-            widget.addOption(line)
-        # widget.layout.addWidget(QtWidgets.QLabel(line, alignment=QtCore.Qt.AlignLeft))
-        # widget.setStyleSheet("QLabel { border-style: solid; border-width: 2px; border-color: red; }")
-    # widget.items[-1].setStyleSheet("* { background-color: #ababab; color: black; }")
+    
+    piped_input = sys.stdin.read().splitlines()
+    for line in piped_input:
+        widget.addOption(line)
+
     sys.exit(app.exec_())
