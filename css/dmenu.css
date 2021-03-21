@@ -1,0 +1,34 @@
+*
+{
+    background-color: #484848;
+    color: white;
+    /* margin: 0px;
+    padding: 0px; */
+}
+
+.Dmenu
+{
+    border: 3px solid #edccea;
+}
+
+QLineEdit
+{
+    border: none;
+}
+
+QListWidget::item::selected
+{
+    background-color: #ababab;
+    color: black;
+}
+
+QScrollBar {
+    width:0px;
+}
+
+QListWidget::item
+{
+    padding: 0px;
+    margin: 0px;
+    line-height: 0px;
+}
