@@ -2,8 +2,12 @@
 {
     background-color: #484848;
     color: white;
-    /* margin: 0px;
-    padding: 0px; */
+    font-size: 30px;
+    font-family: monospace;
+    /* height: 1em;
+    line-height: 100%; */
+    margin: 0px;
+    padding: 0px;
 }
 
 .Dmenu
@@ -14,21 +18,34 @@
 QLineEdit
 {
     border: none;
-}
-
-QListWidget::item::selected
-{
-    background-color: #ababab;
-    color: black;
+    padding: 0;
+    selection-background-color: #edccea;
+    selection-color: black;
 }
 
 QScrollBar {
     width:0px;
 }
 
+QListWidget
+{
+    padding: 0;
+    margin: 0;
+}
+
 QListWidget::item
 {
     padding: 0px;
     margin: 0px;
-    line-height: 0px;
+    height: 45px;
+    font-size: 30px;
+    /* height: 3em; */
+    /* height: 1.2em; */
+    /* line-height: 20px; */
+}
+
+QListWidget::item::selected
+{
+    background-color: #ababab;
+    color: black;
 }
