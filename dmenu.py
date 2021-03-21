@@ -20,8 +20,7 @@ class Dmenu(QtWidgets.QFrame):
         self.layout.setContentsMargins(0, 0, 0, 0)
         self.layout.addWidget(self.textbox)
         self.layout.addWidget(self.menu)
-        self.setWindowFlags(QtCore.Qt.FramelessWindowHint|QtCore.Qt.WindowStaysOnTopHint)
-        # self.setWindowFlags()
+        self.setWindowFlags(QtCore.Qt.FramelessWindowHint | QtCore.Qt.WindowStaysOnTopHint)
 
     def keyPressEvent(self, e):
         if e.key() == QtCore.Qt.Key_Escape:
@@ -60,6 +59,9 @@ def getScreenAtPos(screens, pos):
 
 
 if __name__ == "__main__":
+    top = None
+    left = None
+
     if (sys.stdin.isatty()):
         sys.exit()
     piped_input = sys.stdin.read().splitlines()
@@ -70,16 +72,19 @@ if __name__ == "__main__":
     widget = Dmenu(piped_input)
 
     if sys.platform.startswith('linux'):
-        # Needed because Qt doesn't know on which screen the Window Manager will 
-        # create the window before it is painted. We get the coordinates of the 
-        # window that has input focus and find the screen on which it is drawn.
+        # Needed because Qt doesn't know on which monitor the Window Manager will
+        # place the window before it is painted. We get the coordinates of the
+        # window that has input focus and find the monitor on which it is drawn.
         from Xlib import X, display, Xutil
         ifocus = display.Display().get_input_focus()
         ifocus_geometry = ifocus.focus.get_geometry()
         curr_pos = QtCore.QPoint(ifocus_geometry.x, ifocus_geometry.y)
+        # For some reason, top position is relative to the monitor
+        # and not to the screen's root window, unlike left position.
+        top = 0
     elif sys.platform.startswith('win32'):
         # On windows, widget is placed on default screen so we use the cursor's
-        # position to decide on which screen to place the widget
+        # position to decide on which screen to place the widget.
         curr_pos = QtGui.QCursor.pos()
     elif sys.platform.startswith('freebsd'):
         print("Operating system not yet supported")
@@ -97,11 +102,12 @@ if __name__ == "__main__":
     widget.setFixedSize(600, 300)
     widget.show()
     widget.setScreen(current_screen)
+    if (top is None):
+        top = current_screen.geometry().y()
+    if (left is None):
+        left = current_screen.geometry().x()
     widget.move(
-        current_screen.geometry().x() + current_screen.geometry().width() / 2 - widget.width() / 2,
-        current_screen.geometry().y() + current_screen.geometry().height() / 2 - widget.height() / 2
+        left + current_screen.geometry().width() / 2 - widget.width() / 2,
+        top + current_screen.geometry().height() / 2 - widget.height() / 2
     )
-    print(current_screen.geometry().x())
-    print(widget.pos())
-    print(widget.screen())
     sys.exit(app.exec_())
