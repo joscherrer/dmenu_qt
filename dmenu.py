@@ -1,7 +1,6 @@
 import re
 import sys
 import random
-from Xlib import X, display, Xutil
 from PySide6 import QtCore, QtWidgets, QtGui
 
 
@@ -21,8 +20,8 @@ class Dmenu(QtWidgets.QFrame):
         self.layout.setContentsMargins(0, 0, 0, 0)
         self.layout.addWidget(self.textbox)
         self.layout.addWidget(self.menu)
-        self.setWindowFlags(QtCore.Qt.FramelessWindowHint)
-        self.setWindowFlags(QtCore.Qt.WindowStaysOnTopHint)
+        self.setWindowFlags(QtCore.Qt.FramelessWindowHint|QtCore.Qt.WindowStaysOnTopHint)
+        # self.setWindowFlags()
 
     def keyPressEvent(self, e):
         if e.key() == QtCore.Qt.Key_Escape:
@@ -48,7 +47,7 @@ class Dmenu(QtWidgets.QFrame):
 
 
 # screens : QScreensList
-# pos : dict { x: 0, y: 0 }
+# pos : QPoint
 # returns: QScreen
 def getScreenAtPos(screens, pos):
     for screen in screens:
@@ -56,7 +55,7 @@ def getScreenAtPos(screens, pos):
         x_low = screen.geometry().x()
         y_high = screen.geometry().y() + screen.geometry().height()
         y_low = screen.geometry().y()
-        if (x_low <= pos.x < x_high) and (y_low <= pos.y < y_high):
+        if (x_low <= pos.x() < x_high) and (y_low <= pos.y() < y_high):
             return screen
 
 
@@ -66,20 +65,43 @@ if __name__ == "__main__":
     piped_input = sys.stdin.read().splitlines()
 
     app = QtWidgets.QApplication([])
-
-    # Needed because Qt doesn't know where the Window Manager
-    # will create the window before it is painted
-    input_focus_geometry = display.Display().get_input_focus().focus.get_geometry()
-    current_screen = getScreenAtPos(app.screens(), input_focus_geometry)
-
     app.setApplicationName("dmenu")
     app.setFont(QtGui.QFont("Menlo for Powerline", 14, QtGui.QFont.Bold))
     widget = Dmenu(piped_input)
+
+    if sys.platform.startswith('linux'):
+        # Needed because Qt doesn't know on which screen the Window Manager will 
+        # create the window before it is painted. We get the coordinates of the 
+        # window that has input focus and find the screen on which it is drawn.
+        from Xlib import X, display, Xutil
+        ifocus = display.Display().get_input_focus()
+        ifocus_geometry = ifocus.focus.get_geometry()
+        curr_pos = QtCore.QPoint(ifocus_geometry.x, ifocus_geometry.y)
+    elif sys.platform.startswith('win32'):
+        # On windows, widget is placed on default screen so we use the cursor's
+        # position to decide on which screen to place the widget
+        curr_pos = QtGui.QCursor.pos()
+    elif sys.platform.startswith('freebsd'):
+        print("Operating system not yet supported")
+        sys.exit()
+    elif sys.platform.startswith('darwin'):
+        print("Operating system not yet supported")
+        sys.exit()
+    else:
+        print("Maybe you should reconsider your life choices.")
+        print("jk, submit a patch if you need this tool on your OS")
+        sys.exit()
+
+    current_screen = getScreenAtPos(app.screens(), curr_pos)
     widget.resize(600, 300)
     widget.setFixedSize(600, 300)
     widget.show()
+    widget.setScreen(current_screen)
     widget.move(
-        current_screen.geometry().width() / 2 - widget.width() / 2,
-        current_screen.geometry().height() / 2 - widget.height() / 2
+        current_screen.geometry().x() + current_screen.geometry().width() / 2 - widget.width() / 2,
+        current_screen.geometry().y() + current_screen.geometry().height() / 2 - widget.height() / 2
     )
+    print(current_screen.geometry().x())
+    print(widget.pos())
+    print(widget.screen())
     sys.exit(app.exec_())
