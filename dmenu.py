@@ -34,7 +34,10 @@ class Dmenu(QtWidgets.QFrame):
                 return
             self.menu.setCurrentRow(self.menu.currentRow() - 1)
         elif e.key() == QtCore.Qt.Key_Return:
-            print(self.menu.currentItem().text())
+            if (self.menu.count() == 0):
+                print(self.textbox.text())
+            else:
+                print(self.menu.currentItem().text())
             self.close()
 
     def onChanged(self, text):
