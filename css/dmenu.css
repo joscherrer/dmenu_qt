@@ -27,25 +27,32 @@ QScrollBar {
     width:0px;
 }
 
-QListWidget
+QListView
 {
     padding: 0;
     margin: 0;
 }
 
-QListWidget::item
+QListView::item
 {
     padding: 0px;
     margin: 0px;
     height: 45px;
     font-size: 30px;
-    /* height: 3em; */
-    /* height: 1.2em; */
-    /* line-height: 20px; */
 }
 
-QListWidget::item::selected
+QListView::item::selected
 {
-    background-color: #ababab;
-    color: black;
+    background-color: #edccea;
+    color: #484848;
+}
+
+QListView::item:hover
+{
+    background-color: #484848;
+}
+
+QListView::item::selected:hover
+{
+    background-color: #edccea;
 }

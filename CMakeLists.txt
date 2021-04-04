@@ -8,6 +8,10 @@ set(TARGET_NAME dmenu_qt)
 set(QT_MAJOR_VERSION 6)
 
 project(${TARGET_NAME} VERSION 0.0.1 DESCRIPTION "Project Description")
+configure_file(
+    config.h.in
+    config.h
+)
 
 #Make sure CMake will take care of moc for us
 set(CMAKE_AUTOMOC ON)
@@ -15,6 +19,7 @@ set(CMAKE_AUTOMOC ON)
 #Set the CXX standard. Qt 6 I believe uses c++ 17
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -static")
 
 #See if the environment var is set
 if(DEFINED ENV{Qt${QT_MAJOR_VERSION}_HOME})
@@ -33,20 +38,27 @@ endif()
 find_package(Qt${QT_MAJOR_VERSION} COMPONENTS Widgets REQUIRED PATHS $ENV{Qt${QT_MAJOR_VERSION}_HOME})
 
 add_executable(${TARGET_NAME}
-    include/window.hpp
-    src/window.cpp
-    src/main.cpp)
+    include/dmenu.hpp
+    include/textbox.hpp
+    include/os.hpp
+    include/stdin.hpp
+    include/helper.hpp
+    src/textbox.cpp
+    src/dmenu.cpp
+    src/main.cpp
+    src/stdin.cpp
+    src/helper.cpp)
 
 if(MSVC)
     target_compile_options(${TARGET_NAME} PRIVATE /W4 /WX)
 else()
-    target_compile_options(${TARGET_NAME} PRIVATE -Wall -Wextra -pedantic -Werror)
+    target_compile_options(${TARGET_NAME} PRIVATE -Wall -Wextra -pedantic -Werror -Wno-unused-variable -Wno-unused-parameter)
 endif()
 
 target_include_directories(${TARGET_NAME} PRIVATE ${Qt${QT_MAJOR_VERSION}_INCLUDE_DIRS})
-target_include_directories(${TARGET_NAME} PRIVATE ${CMAKE_SOURCE_DIR}/include)
+target_include_directories(${TARGET_NAME} PRIVATE ${CMAKE_SOURCE_DIR}/include ${PROJECT_BINARY_DIR})
 
 set_target_properties(${TARGET_NAME} PROPERTIES DEBUG_OUTPUT_NAME "${TARGET_NAME}d" RELEASE_OUTPUT_NAME ${TARGET_NAME})
 
 #Add any extra libs to link also.
-target_link_libraries(${TARGET_NAME} PRIVATE Qt${QT_MAJOR_VERSION}::Widgets)
+target_link_libraries(${TARGET_NAME} PRIVATE Qt${QT_MAJOR_VERSION}::Widgets -static)
