@@ -9,8 +9,8 @@ set(QT_MAJOR_VERSION 6)
 
 project(${TARGET_NAME} VERSION 0.0.1 DESCRIPTION "Project Description")
 configure_file(
-    config.h.in
-    config.h
+    "project.h.in"
+    "project.h"
 )
 
 #Make sure CMake will take care of moc for us
@@ -43,11 +43,13 @@ add_executable(${TARGET_NAME}
     include/os.hpp
     include/stdin.hpp
     include/helper.hpp
+    include/config.hpp
     src/textbox.cpp
     src/dmenu.cpp
     src/main.cpp
     src/stdin.cpp
-    src/helper.cpp)
+    src/helper.cpp
+    ${RESOURCE})
 
 if(MSVC)
     target_compile_options(${TARGET_NAME} PRIVATE /W4 /WX)

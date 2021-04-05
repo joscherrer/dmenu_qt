@@ -21,7 +21,7 @@ class Dmenu : public QFrame
     bool event(QEvent *e);
     void filterMenu();
 public:
-    Dmenu(QWidget *parent = nullptr, bool sensitive = true);
+    Dmenu(bool sensitive = true, QWidget *parent = nullptr);
     void focusOutEvent(QFocusEvent *e) override;
     void selectRow(int row);
     void startThread();

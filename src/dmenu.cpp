@@ -1,21 +1,25 @@
 #include "dmenu.hpp"
 #include "textbox.hpp"
 #include "stdin.hpp"
+#include "config.hpp"
+#include "helper.hpp"
 #include <iostream>
 #include <QFile>
+#include <QFontDatabase>
 #include <QVBoxLayout>
 #include <QRegularExpression>
 
-Dmenu::Dmenu(QWidget* parent, bool sensitive)
+
+
+Dmenu::Dmenu(bool sensitive, QWidget *parent)
 :QFrame(parent)
 {
-    QFile styleSheet("./css/dmenu.css");
-    styleSheet.open(QFile::ReadOnly);
-    this->setStyleSheet(styleSheet.readAll());
     this->textBox = new TextBox(this);
     this->menuModel = new QStringListModel(this);
     this->menuView = new QListView(this);
     this->menuProxyModel = new QSortFilterProxyModel(this);
+
+    // this->menuView->setStyleSheet("QScrollBar { width:0px; } QListView::item::selected { background-color: #edccea; color: #484848; }");
 
     this->menuProxyModel->setSourceModel(this->menuModel);
     this->menuProxyModel->setFilterCaseSensitivity(Qt::CaseInsensitive);
@@ -25,11 +29,15 @@ Dmenu::Dmenu(QWidget* parent, bool sensitive)
     this->menuView->setUniformItemSizes(true);
     this->menuView->setLayoutMode(QListView::Batched);
     this->menuView->setBatchSize(250);
+    this->menuView->setContentsMargins(QMargins(0,0,0,0));
+    this->menuView->setFrameShape(QFrame::NoFrame);
 
+    this->menuView->setStyleSheet("QListWidget::item:hover,QListWidget::item:disabled:hover,QListWidget::item:hover:!active,{background: transparent;}");
     this->textBox->setFocusPolicy(Qt::TabFocus);
 
     auto mainLayout = new QVBoxLayout();
     mainLayout->setContentsMargins(QMargins(0,0,0,0));
+    mainLayout->setSpacing(0);
     mainLayout->addWidget(this->textBox);
     mainLayout->addWidget(this->menuView);
     setLayout(mainLayout);
