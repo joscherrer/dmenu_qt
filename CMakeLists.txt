@@ -40,15 +40,18 @@ find_package(Qt${QT_MAJOR_VERSION} COMPONENTS Widgets REQUIRED PATHS $ENV{Qt${QT
 add_executable(${TARGET_NAME}
     include/dmenu.hpp
     include/textbox.hpp
-    include/os.hpp
     include/stdin.hpp
     include/helper.hpp
     include/config.hpp
+    include/menuview.hpp
+    include/delegate.hpp
     src/textbox.cpp
     src/dmenu.cpp
     src/main.cpp
     src/stdin.cpp
     src/helper.cpp
+    src/menuview.cpp
+    src/delegate.cpp
     ${RESOURCE})
 
 if(MSVC)

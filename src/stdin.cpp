@@ -19,9 +19,9 @@ void StdinReader::readStdin()
         // if (i % 2000 == 0)
         // {
         //     emit newEntry(input_data);
-        //     input_data.clear();
-        //     // std::this_thread::sleep_for(std::chrono::milliseconds(10));
+        //     std::this_thread::sleep_for(std::chrono::milliseconds(20));
         // }
     }
     emit newEntry(input_data);
+    emit stdinDone();
 }

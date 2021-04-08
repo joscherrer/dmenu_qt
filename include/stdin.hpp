@@ -12,4 +12,5 @@ public slots:
     void readStdin();
 signals:
     void newEntry(QStringList entry);
+    void stdinDone();
 };

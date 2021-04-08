@@ -13,9 +13,13 @@ using std::chrono::time_point;
 class Helper
 {
 private:
+    time_point<high_resolution_clock> initial_time;
     time_point<high_resolution_clock> last_time;
 public:
     Helper();
-    void timestamp(std::string s);
+    std::string time_from_last();
+    std::string time_from_start();
     ~Helper() = default;
 };
+
+extern Helper h;

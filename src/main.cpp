@@ -1,84 +1,85 @@
-#include "os.hpp"
+#include "unistd.h"
+#include <iostream>
+#include <QApplication>
+#include <QStyleFactory>
+
 #include "dmenu.hpp"
 #include "config.hpp"
 #include "project.h"
-#include "stdin.hpp"
 #include "helper.hpp"
-#include <iostream>
-#include <QFile>
-#include <QStringList>
-#include <QApplication>
-#include <memory>
-#include <stdexcept>
 
-template<typename ... Args>
-std::string string_format(const std::string& format, Args ... args)
+#if defined(_linux_)
+static bool generic_isatty = isatty(0);
+#elif defined(_WIN64)
+static bool generic_isatty = _isatty(0);
+#endif
+
+Config config;
+Helper h;
+
+QPalette
+map_to_palette(std::map<QPalette::ColorRole, QColor> palette_map)
 {
-    size_t size = snprintf( nullptr, 0, format.c_str(), args ... ) + 1; // Extra space for '\0'
-    if( size <= 0 ){ throw std::runtime_error( "Error during formatting." ); }
-    std::unique_ptr<char[]> buf( new char[ size ] ); 
-    snprintf( buf.get(), size, format.c_str(), args ... );
-    return std::string( buf.get(), buf.get() + size - 1 ); // We don't want the '\0' inside
+    QPalette palette;
+
+    for (const auto& [key, value] : palette_map)
+    {
+        palette.setColor(key, value);
+    }
+    return palette;
+}
+
+static void
+usage(void)
+{
+    fputs("usage: dmenu_qt [-iv] [-fn font_face] [-fs font_size] [-nb bg color] [-nf fg color]\n"
+          "                [-sb bg highlight color] [-sf fg highlight color]", stderr);
+    exit(1);
 }
 
 int
 main(int argc, char* argv[])
 {
-    int i;
-    QFont font(dmenu_font, 12);
-    bool sensitive = true;
-    for (i = 1; i < argc; i++)
-    {
-        if (!strcmp(argv[i], "-v"))
-        {
-            std::cout << PROJECT_NAME << " " << PROJECT_VER << std::endl;
-            exit(0);
-        } 
-        else if (!strcmp(argv[i], "-i"))
-        {
-            sensitive = false;
-        }
-        else if (!strcmp(argv[i], "-fn"))
-        {
-            font = QFont(argv[++i]);
-        }
-    }
-
     if (generic_isatty)
+        usage();
+
+    for (int i = 1; i < argc; i++)
     {
-        exit(0);
+        if (!strcmp(argv[i], "-v")) {
+            std::cout << PROJECT_NAME << " " << PROJECT_VER << std::endl;
+            exit(0); 
+        } else if (!strcmp(argv[i], "-i")) {
+            std::cout << "sensitive" << std::endl;
+            config.sensitive = false;
+        } else if (!strcmp(argv[i], "-fn"))
+            config.font_face = QString(argv[++i]);
+        else if (!strcmp(argv[i], "-fs"))
+            config.font_size = atoi(argv[++i]);
+        else if (!strcmp(argv[i], "-l"))
+            config.lines = atoi(argv[++i]);
+        else if (!strcmp(argv[i], "-nb")) {
+            config.palette_map[QPalette::Base] = QColor(argv[++i]);
+            config.palette_map[QPalette::Window] = QColor(argv[++i]);
+        } else if (!strcmp(argv[i], "-nf"))
+            config.palette_map[QPalette::Text] = QColor(argv[++i]);
+        else if (!strcmp(argv[i], "-sb"))
+            config.palette_map[QPalette::Highlight] = QColor(argv[++i]);
+        else if (!strcmp(argv[i], "-sf"))
+            config.palette_map[QPalette::HighlightedText] = QColor(argv[++i]);
+        else
+            usage();
     }
 
-    
-    std::string dmenu_formatted = string_format(dmenu_style, "#484848", "white", "#edccea", "#484848");
-    std::cout << dmenu_formatted << std::endl;
+    config.palette = map_to_palette(config.palette_map);
 
-    Helper h;
-    h.timestamp("Init");
     QApplication app(argc, argv);
+    app.setStyle(QStyleFactory::create("fusion")); /* We do this so the system palette can be overriden */
+    app.setFont(QFont(config.font_face, config.font_size));
+    app.setPalette(config.palette);
 
-    QPalette pal = QPalette();
-    pal.setColor(QPalette::Normal, QPalette::Highlight, QColor("black"));
-    pal.setColor(QPalette::Inactive, QPalette::Highlight, QColor("black"));
-    pal.setColor(QPalette::Normal, QPalette::HighlightedText, QColor("black"));
-    pal.setColor(QPalette::Inactive, QPalette::HighlightedText, QColor("black"));
-    app.setPalette(pal);
-
-    font.setFixedPitch(true);
-    font.setStyleHint(QFont::Monospace);
-    app.setFont(font);
-    h.timestamp("QApplication");
-    Dmenu dmenu(sensitive);
-    // dmenu.setStyleSheet(QString::fromStdString(dmenu_formatted));
-    h.timestamp("Dmenu");
-    StdinReader t;
-
+    Dmenu dmenu;
     dmenu.resize(QSize(600, 300));
     dmenu.setFixedSize(QSize(600,300));
     dmenu.show();
-    h.timestamp("Show");
-    dmenu.startThread();
-    h.timestamp("StartThread");
-    dmenu.selectRow(0);
     return app.exec();
 }
