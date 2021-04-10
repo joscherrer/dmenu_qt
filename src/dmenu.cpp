@@ -14,6 +14,7 @@
 Dmenu::Dmenu(QWidget *parent)
 :QFrame(parent, Qt::WindowStaysOnTopHint | Qt::FramelessWindowHint)
 {
+    h.timestamp("Dmenu init start");
     this->textBox = new TextBox(this);
     this->menuView = new MenuView(this);
     this->menuModel = new QStringListModel(this);
@@ -44,8 +45,8 @@ Dmenu::Dmenu(QWidget *parent)
         this->menuProxyModel->setFilterWildcard(this->textBox->text());
         this->selectRow(0);
     });
-
-    this->startThread();
+    h.timestamp("Dmenu init end");
+    // this->startThread();
 }
 
 bool
@@ -100,6 +101,10 @@ Dmenu::event(QEvent *e)
             return true;
         }
     }
+    else if (e->type() == QEvent::Polish)
+    {
+        h.timestamp("Window visible");
+    }
     return QFrame::event(e);
 }
 
@@ -119,35 +124,15 @@ Dmenu::focusOutEvent(QFocusEvent *e)
 }
 
 void
-Dmenu::addEntry(QStringList entry)
+Dmenu::addEntry(QStringList &entry)
 {
     this->menuModel->setStringList(entry);
 }
 
 void
-Dmenu::startThread()
+Dmenu::set_data()
 {
-    std::cout << "Started thread at " << h.time_from_start() << std::endl;
-    StdinReader *st = new StdinReader;
-    st->moveToThread(&workerThread);
-    // connect(&workerThread, &QThread::finished, st, &QObject::deleteLater);
-    connect(st, &StdinReader::stdinDone, this, [this](){
-        std::cout << "Finished reading stdin in " << h.time_from_start() << std::endl;
-    });
-    connect(this, &Dmenu::readStdin, st, &StdinReader::readStdin);
-    connect(st, &StdinReader::newEntry, this, &Dmenu::addEntry);
-    workerThread.start();
-    emit readStdin();
-}
-
-Dmenu::~Dmenu()
-{
-    workerThread.quit();
-    workerThread.wait();
-}
-
-void
-Dmenu::slotStartThread()
-{
-    this->startThread();
+    h.timestamp("Start set model");
+    this->menuModel->setStringList(this->sr->data);
+    h.timestamp("End set model");
 }

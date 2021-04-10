@@ -1,11 +1,12 @@
 #include "menuview.hpp"
 #include "config.hpp"
+#include "helper.hpp"
 
 MenuView::MenuView(QWidget *parent)
 :QListView(parent)
 {
     this->setSpacing(0);
-    this->setBatchSize(2000);
+    this->setBatchSize(250);
     this->setUniformItemSizes(true);
     this->setFrameShape(QFrame::NoFrame);
     this->setLayoutMode(QListView::Batched);

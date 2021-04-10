@@ -1,5 +1,7 @@
 #pragma once
 
+#include "stdin.hpp"
+
 #include <QFrame>
 #include <QEvent>
 #include <QLineEdit>
@@ -14,16 +16,15 @@ class Dmenu : public QFrame
     Q_OBJECT
 
     QLineEdit* textBox;
-    QThread workerThread;
 
     bool event(QEvent *e);
     void filterMenu();
 public:
+    StdinReader* sr;
     Dmenu(QWidget *parent = nullptr);
     void focusOutEvent(QFocusEvent *e) override;
     void selectRow(int row);
-    void startThread();
-    ~Dmenu();
+    ~Dmenu() = default;
 
 private:
     QListView *menuView;
@@ -31,11 +32,10 @@ private:
     QSortFilterProxyModel *menuProxyModel;
 
 public slots:
-    void addEntry(QStringList entry);
-    void slotStartThread();
+    void addEntry(QStringList &entry);
+    void set_data();
 
 signals:
     void readStdin();
-
 };
 

@@ -1,27 +1,19 @@
 #include "stdin.hpp"
 #include <iostream>
 #include <chrono>
-#include <thread>
+
+#include "helper.hpp"
 
 StdinReader::StdinReader()
 {
+    h.timestamp("Stdin start");
+    this->sr_thread = std::thread(&StdinReader::readStdin, this);
 }
 
-
-void StdinReader::readStdin()
+void
+StdinReader::readStdin()
 {
-    int i = 0;
-    QStringList input_data;
     for (std::string line; std::getline(std::cin, line);) {
-        // emit newEntry(QString::fromStdString(line));
-        i++;
-        input_data += QString::fromStdString(line);
-        // if (i % 2000 == 0)
-        // {
-        //     emit newEntry(input_data);
-        //     std::this_thread::sleep_for(std::chrono::milliseconds(20));
-        // }
+        data += QString::fromStdString(line);
     }
-    emit newEntry(input_data);
-    emit stdinDone();
 }

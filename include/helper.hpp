@@ -13,12 +13,17 @@ using std::chrono::time_point;
 class Helper
 {
 private:
+    const char separator = ' ';
+    const int msg_width = 25;
+    const int tms_width = 15;
+    bool header = false;
     time_point<high_resolution_clock> initial_time;
     time_point<high_resolution_clock> last_time;
 public:
     Helper();
-    std::string time_from_last();
-    std::string time_from_start();
+    double time_from_last();
+    double time_from_start();
+    void timestamp(std::string msg);
     ~Helper() = default;
 };
 

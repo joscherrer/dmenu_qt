@@ -37,27 +37,35 @@ endif()
 #it is in the default install path.
 find_package(Qt${QT_MAJOR_VERSION} COMPONENTS Widgets REQUIRED PATHS $ENV{Qt${QT_MAJOR_VERSION}_HOME})
 
+file(GLOB_RECURSE sources CONFIGURE_DEPENDS "src/*.cpp")
+file(GLOB_RECURSE includes CONFIGURE_DEPENDS "include/*.hpp")
+
 add_executable(${TARGET_NAME}
-    include/dmenu.hpp
-    include/textbox.hpp
-    include/stdin.hpp
-    include/helper.hpp
-    include/config.hpp
-    include/menuview.hpp
-    include/delegate.hpp
-    src/textbox.cpp
-    src/dmenu.cpp
-    src/main.cpp
-    src/stdin.cpp
-    src/helper.cpp
-    src/menuview.cpp
-    src/delegate.cpp
+    ${sources}
+    ${includes}
     ${RESOURCE})
+# include/dmenu.hpp
+# include/textbox.hpp
+# include/stdin.hpp
+# include/helper.hpp
+# include/config.hpp
+# include/menuview.hpp
+# include/delegate.hpp
+# include/watcher.hpp
+# include/json.hpp
+# src/textbox.cpp
+# src/dmenu.cpp
+# src/main.cpp
+# src/stdin.cpp
+# src/helper.cpp
+# src/menuview.cpp
+# src/delegate.cpp
+# src/watcher.cpp
 
 if(MSVC)
     target_compile_options(${TARGET_NAME} PRIVATE /W4 /WX)
 else()
-    target_compile_options(${TARGET_NAME} PRIVATE -Wall -Wextra -pedantic -Werror -Wno-unused-variable -Wno-unused-parameter)
+    target_compile_options(${TARGET_NAME} PRIVATE -Wall -Wextra -pedantic -Werror -Wno-unused-variable -Wno-unused-parameter -O3)
 endif()
 
 target_include_directories(${TARGET_NAME} PRIVATE ${Qt${QT_MAJOR_VERSION}_INCLUDE_DIRS})
@@ -66,4 +74,4 @@ target_include_directories(${TARGET_NAME} PRIVATE ${CMAKE_SOURCE_DIR}/include ${
 set_target_properties(${TARGET_NAME} PROPERTIES DEBUG_OUTPUT_NAME "${TARGET_NAME}d" RELEASE_OUTPUT_NAME ${TARGET_NAME})
 
 #Add any extra libs to link also.
-target_link_libraries(${TARGET_NAME} PRIVATE Qt${QT_MAJOR_VERSION}::Widgets -static)
+target_link_libraries(${TARGET_NAME} PRIVATE Qt${QT_MAJOR_VERSION}::Widgets)

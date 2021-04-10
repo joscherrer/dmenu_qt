@@ -1,16 +1,17 @@
 #pragma once
 
 #include <QObject>
+#include <QStringList>
+#include <thread>
 
-class StdinReader : public QObject
+class StdinReader
 {
-    Q_OBJECT
-public:
-    StdinReader();
 
-public slots:
+public:
+    QStringList data;
+    QObject *watcher;
+    std::thread sr_thread;
+    // bool data_ready = false;
+    StdinReader();
     void readStdin();
-signals:
-    void newEntry(QStringList entry);
-    void stdinDone();
 };
