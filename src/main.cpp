@@ -15,7 +15,7 @@
 #include "stdin.hpp"
 #include "watcher.hpp"
 
-#if defined(_linux_)
+#if defined(linux)
 static bool generic_isatty = isatty(0);
 #elif defined(_WIN64)
 static bool generic_isatty = _isatty(0);
