@@ -4,6 +4,8 @@
 #include "config.hpp"
 #include "helper.hpp"
 #include "menuview.hpp"
+#include "delegate.hpp"
+
 #include <iostream>
 #include <QFile>
 #include <QFontDatabase>
@@ -72,13 +74,17 @@ Dmenu::event(QEvent *e)
         else if (ke->key() == Qt::Key_Down)
         {
             QModelIndex index = this->menuView->currentIndex();
-            this->selectRow(index.row() + 1);
+            QModelIndex newIndex = this->selectRow(index.row() + 1);
+            if ((index.row() + 1) % config.lines == 0 && index.row() + 1 != 0)
+                this->menuView->scrollTo(newIndex, QAbstractItemView::PositionAtTop);
             return true;
         }
         else if (ke->key() == Qt::Key_Up)
         {
             QModelIndex index = this->menuView->currentIndex();
-            this->selectRow(index.row() - 1);
+            QModelIndex newIndex = this->selectRow(index.row() - 1);
+            if (index.row() % config.lines == 0 && newIndex.isValid())
+                this->menuView->scrollTo(newIndex, QAbstractItemView::PositionAtBottom);
             return true;
         }
         else if (ke->key() == Qt::Key_Left)
@@ -86,7 +92,22 @@ Dmenu::event(QEvent *e)
         }
         else if (ke->key() == Qt::Key_Right)
         {
-
+        }
+        else if (ke->key() == Qt::Key_PageDown)
+        {
+            QModelIndex index = this->menuView->currentIndex();
+            QModelIndex newIndex = this->selectRow((index.row() / config.lines + 1) * config.lines);
+            this->selectRow(newIndex.row());
+            this->menuView->scrollTo(newIndex, QAbstractItemView::PositionAtTop);
+            return true;
+        }
+        else if (ke->key() == Qt::Key_PageUp)
+        {
+            QModelIndex index = this->menuView->currentIndex();
+            QModelIndex newIndex = this->selectRow((index.row() / config.lines - 1) * config.lines);
+            this->selectRow(newIndex.row());
+            this->menuView->scrollTo(newIndex, QAbstractItemView::PositionAtTop);
+            return true;
         }
     }
     else if (e->type() == QEvent::ShortcutOverride)
@@ -108,12 +129,13 @@ Dmenu::event(QEvent *e)
     return QFrame::event(e);
 }
 
-void
+QModelIndex
 Dmenu::selectRow(int row)
 {
     QModelIndex index = this->menuProxyModel->index(row, 0);
     if (index.isValid())
         this->menuView->setCurrentIndex(index);
+    return index;
 }
 
 void
@@ -135,4 +157,13 @@ Dmenu::set_data()
     h.timestamp("Start set model");
     this->menuModel->setStringList(this->sr->data);
     h.timestamp("End set model");
+}
+
+void
+Dmenu::fitToContent()
+{
+    QFontMetrics fm(config.font);
+    QSize qs(600, config.lines * fm.height() + this->textBox->height() + config.border_width * 2);
+    this->resize(qs);
+    this->setFixedSize(qs);
 }

@@ -23,7 +23,8 @@ public:
     StdinReader* sr;
     Dmenu(QWidget *parent = nullptr);
     void focusOutEvent(QFocusEvent *e) override;
-    void selectRow(int row);
+    QModelIndex selectRow(int row);
+    void fitToContent();
     ~Dmenu() = default;
 
 private:

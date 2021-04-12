@@ -1,4 +1,5 @@
 #include "menuview.hpp"
+#include "delegate.hpp"
 #include "config.hpp"
 #include "helper.hpp"
 
@@ -14,6 +15,7 @@ MenuView::MenuView(QWidget *parent)
     this->setSelectionBehavior(QAbstractItemView::SelectRows);
     this->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     this->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    this->setItemDelegate(new Delegate);
 }
 
 void
@@ -21,3 +23,4 @@ MenuView::setDirection(Flow flow)
 {
     this->setFlow(flow);
 }
+

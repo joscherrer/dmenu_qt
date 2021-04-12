@@ -1,3 +1,14 @@
 {
-    "oui": "non"
+    "sensitive": true,
+    "lines": 12,
+    "font_size": 24,
+    "font_face": "Cascadia Mono",
+    "palette_map": {
+        "QPalette::Text": "black",
+        "QPalette::Base": "white",
+        "QPalette::Window": "white",
+        "QPalette::Highlight": "black",
+        "QPalette::WindowText": "red",
+        "QPalette::HighlightedText": "white"
+    }
 }

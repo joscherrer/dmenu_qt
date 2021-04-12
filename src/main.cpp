@@ -4,6 +4,8 @@
 #include <fstream>
 #include <sstream>
 #include <iostream>
+#include <QDir>
+#include <QStandardPaths>
 #include <QApplication>
 #include <QStyleFactory>
 
@@ -15,9 +17,11 @@
 #include "stdin.hpp"
 #include "watcher.hpp"
 
-#if defined(linux)
+#if defined(unix)
 static bool generic_isatty = isatty(0);
+QDir config_dir = QStandardPaths::writableLocation(QStandardPaths::ConfigLocation) + "/" + PROJECT_NAME;
 #elif defined(_WIN64)
+QDir config_dir = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation) + "/" + PROJECT_NAME;
 static bool generic_isatty = _isatty(0);
 #endif
 
@@ -25,20 +29,6 @@ using json = nlohmann::json;
 
 Config config;
 Helper h;
-
-bool dmenu_ready = false;
-
-QPalette
-map_to_palette(std::map<QPalette::ColorRole, QColor> palette_map)
-{
-    QPalette palette;
-
-    for (const auto& [key, value] : palette_map)
-    {
-        palette.setColor(key, value);
-    }
-    return palette;
-}
 
 static void
 usage(void)
@@ -58,6 +48,24 @@ main(int argc, char* argv[])
     if (generic_isatty)
         usage();
 
+    QFile config_file(config_dir.path() + "/config.json");
+
+    if (config_file.exists()) {
+        std::ifstream user_conf(config_file.fileName().toStdString());
+        json user_json;
+        user_conf >> user_json;
+        config.from_json(user_json);
+    }
+    
+    for (int i = 1; i < argc; i++) {
+        if (!strcmp(argv[i], "-cf")) {
+            std::ifstream extra_conf(argv[++i]);
+            json extra_json;
+            extra_conf >> extra_json;
+            config.from_json(extra_json);
+        }
+    }
+
     for (int i = 1; i < argc; i++)
     {
         if (!strcmp(argv[i], "-v")) {
@@ -72,31 +80,28 @@ main(int argc, char* argv[])
         else if (!strcmp(argv[i], "-l"))
             config.lines = atoi(argv[++i]);
         else if (!strcmp(argv[i], "-nb")) {
-            config.palette_map[QPalette::Base] = QColor(argv[++i]);
-            config.palette_map[QPalette::Window] = QColor(argv[++i]);
+            int val = ++i;
+            config.palette_map[QPalette::Base] = QColor(argv[val]);
+            config.palette_map[QPalette::Window] = QColor(argv[val]);
         } else if (!strcmp(argv[i], "-nf"))
             config.palette_map[QPalette::Text] = QColor(argv[++i]);
         else if (!strcmp(argv[i], "-sb"))
             config.palette_map[QPalette::Highlight] = QColor(argv[++i]);
         else if (!strcmp(argv[i], "-sf"))
             config.palette_map[QPalette::HighlightedText] = QColor(argv[++i]);
-        else if (!strcmp(argv[i], "-cf")) {
-            h.timestamp("Config.json start");
-            std::ifstream t(argv[++i]);
-            std::stringstream buffer;
-            buffer <<t.rdbuf();
-            auto config_json = json::parse(buffer.str());
-            std::cout << config_json.dump() << std::endl;
-            h.timestamp("Config.json end");
-        } else
+        else if (!strcmp(argv[i], "-cf"))
+            ++i; // Ignore config file as its settings are already loaded
+        else
             usage();
     }
-
-    config.palette = map_to_palette(config.palette_map);
+    // exit(0);
+    // config.palette = map_to_palette(config.palette_map);
+    config.gen_palette();
+    config.gen_font();
     h.timestamp("QApp before");
     app = new QApplication(argc, argv);
     app->setStyle(QStyleFactory::create("fusion")); /* We do this so the system palette can be overriden */
-    app->setFont(QFont(config.font_face, config.font_size));
+    app->setFont(config.font);
     app->setPalette(config.palette);
     h.timestamp("QApp after");
 
@@ -112,11 +117,10 @@ main(int argc, char* argv[])
     w->connect(w, &Watcher::data_ready, dmenu, &Dmenu::set_data);
     q.start();
     dmenu->readStdin();
-    dmenu->resize(QSize(600, 300));
-    dmenu->setFixedSize(QSize(600,300));
+    // dmenu->setFixedSize(QSize(600,300));
     dmenu->show();
-
-
+    // dmenu->resize(QSize(600, 300));
+    dmenu->fitToContent();
     int rc = app->exec();
     q.quit();
     q.wait();

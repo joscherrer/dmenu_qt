@@ -12,8 +12,6 @@
 
 # Todo
 
-- Implement window sizing 
-    - compute item height
 - Implement flow (LeftToRight TopToBottom)
 - Implement PageUp and PageDown events
-- Implement QAbstractItemModel with fetchMore and canFetchMore
+- Implement multi-selection
