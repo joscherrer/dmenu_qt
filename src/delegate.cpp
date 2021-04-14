@@ -13,7 +13,7 @@ void Delegate::paint(QPainter *painter, const QStyleOptionViewItem &option,
 }
 
 QSize Delegate::sizeHint(const QStyleOptionViewItem &option,
-                             const QModelIndex &index) const
+                         const QModelIndex &index) const
 {
     if (index.data().canConvert<QString>()) {
         QFontMetrics fm(config.font);

@@ -2,6 +2,7 @@
 
 #include <QObject>
 #include <QStringList>
+#include <QThread>
 #include <thread>
 
 class StdinReader
@@ -9,7 +10,6 @@ class StdinReader
 
 public:
     QStringList data;
-    QObject *watcher;
     std::thread sr_thread;
 
     StdinReader();

@@ -3,12 +3,12 @@
 
 Watcher::Watcher(StdinReader *sr)
 {
-    this->stdin_reader = sr;
+    this->sr = sr;
 }
 
-void Watcher::watch_sr()
+void Watcher::watchStdinReader()
 {
-    this->stdin_reader->sr_thread.join();
+    this->sr->sr_thread.join();
     h.timestamp("Stdin end");
-    emit this->data_ready();
+    emit this->dataReady();
 }

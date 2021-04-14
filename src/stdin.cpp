@@ -1,8 +1,9 @@
 #include "stdin.hpp"
+#include "helper.hpp"
+
 #include <iostream>
 #include <chrono>
 
-#include "helper.hpp"
 
 StdinReader::StdinReader()
 {
@@ -14,6 +15,6 @@ void
 StdinReader::readStdin()
 {
     for (std::string line; std::getline(std::cin, line);) {
-        data += QString::fromStdString(line);
+        this->data += QString::fromStdString(line);
     }
 }

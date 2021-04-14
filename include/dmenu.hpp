@@ -1,6 +1,8 @@
 #pragma once
 
+#include "textbox.hpp"
 #include "stdin.hpp"
+#include "watcher.hpp"
 
 #include <QFrame>
 #include <QEvent>
@@ -15,28 +17,29 @@ class Dmenu : public QFrame
 {
     Q_OBJECT
 
-    QLineEdit* textBox;
-
-    bool event(QEvent *e);
-    void filterMenu();
 public:
-    StdinReader* sr;
-    Dmenu(QWidget *parent = nullptr);
+    Dmenu(StdinReader *sreader, QWidget *parent = nullptr);
     void focusOutEvent(QFocusEvent *e) override;
-    QModelIndex selectRow(int row);
     void fitToContent();
-    ~Dmenu() = default;
+    QModelIndex selectRow(int row);
+    ~Dmenu();
 
 private:
+    TextBox *textBox;
     QListView *menuView;
     QStringListModel *menuModel;
     QSortFilterProxyModel *menuProxyModel;
+    QThread *q;
+    Watcher *w;
+    StdinReader *sr;
+    bool event(QEvent *e);
+    void connectAll();
 
 public slots:
     void addEntry(QStringList &entry);
-    void set_data();
+    void setData();
 
 signals:
-    void readStdin();
+    void getStdin();
 };
 

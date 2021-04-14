@@ -1,3 +1,5 @@
+#pragma once
+
 #include <QObject>
 #include "stdin.hpp"
 
@@ -5,13 +7,13 @@ class Watcher : public QObject
 {
     Q_OBJECT
 private:
-    StdinReader *stdin_reader;
+    StdinReader *sr;
 public:
     Watcher(StdinReader *sr);
     ~Watcher() = default;
 
 public slots:
-    void watch_sr();
+    void watchStdinReader();
 signals:
-    void data_ready();
+    void dataReady();
 };

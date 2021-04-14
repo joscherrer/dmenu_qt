@@ -1,3 +1,4 @@
+#include "platform/os.hpp"
 #include "unistd.h"
 #include <string>
 #include <thread>
@@ -18,11 +19,9 @@
 #include "watcher.hpp"
 
 #if defined(unix)
-static bool generic_isatty = isatty(0);
-QDir config_dir = QStandardPaths::writableLocation(QStandardPaths::ConfigLocation) + "/" + PROJECT_NAME;
+auto conf_base = QStandardPaths::ConfigLocation
 #elif defined(_WIN64)
-QDir config_dir = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation) + "/" + PROJECT_NAME;
-static bool generic_isatty = _isatty(0);
+auto conf_base = QStandardPaths::AppDataLocation;
 #endif
 
 using json = nlohmann::json;
@@ -41,13 +40,21 @@ usage(void)
 int
 main(int argc, char* argv[])
 {
-    StdinReader* sr = new StdinReader();
-    QApplication* app;
-    Dmenu* dmenu;
-
-    if (generic_isatty)
+    // RECT r;
+    // char wnd_title[256];
+    // HWND hw = GetForegroundWindow();
+    // GetWindowTextA(hw, wnd_title, sizeof(wnd_title));
+    // std::cout << wnd_title << std::endl;
+    // GetWindowRect(hw, &r);
+    // std::cout << "x: " << r.left << std::endl;
+    // std::cout << "y: " << r.top << std::endl;
+    // exit(0);
+    if (os_isatty())
         usage();
 
+    StdinReader sr;
+
+    QDir config_dir = QDir(QStandardPaths::writableLocation(conf_base) + "/" + PROJECT_NAME);
     QFile config_file(config_dir.path() + "/config.json");
 
     if (config_file.exists()) {
@@ -94,35 +101,23 @@ main(int argc, char* argv[])
         else
             usage();
     }
-    // exit(0);
-    // config.palette = map_to_palette(config.palette_map);
+    h.timestamp("Config start");
     config.gen_palette();
     config.gen_font();
-    h.timestamp("QApp before");
-    app = new QApplication(argc, argv);
-    app->setStyle(QStyleFactory::create("fusion")); /* We do this so the system palette can be overriden */
-    app->setFont(config.font);
-    app->setPalette(config.palette);
-    h.timestamp("QApp after");
+    h.timestamp("Config end");
+    h.timestamp("QApp start");
+    QApplication app(argc, argv);
+    /* We do this so the system palette can be overriden */
+    app.setStyle(QStyleFactory::create("fusion"));
+    app.setPalette(config.palette);
+    app.setFont(config.font);
+    h.timestamp("QApp end");
 
-
-    dmenu = new Dmenu();
-    dmenu->sr = sr;
-    // Ugly hack to check if stdin data has been loaded completely
-    QThread q;
-    Watcher *w = new Watcher(sr);
-    w->moveToThread(&q);
-    w->connect(&q, &QThread::finished, w, &QObject::deleteLater);
-    w->connect(dmenu, &Dmenu::readStdin, w, &Watcher::watch_sr);
-    w->connect(w, &Watcher::data_ready, dmenu, &Dmenu::set_data);
-    q.start();
-    dmenu->readStdin();
-    // dmenu->setFixedSize(QSize(600,300));
-    dmenu->show();
-    // dmenu->resize(QSize(600, 300));
-    dmenu->fitToContent();
-    int rc = app->exec();
-    q.quit();
-    q.wait();
-    return rc;
+    Dmenu dmenu(&sr);
+    emit dmenu.getStdin();
+    dmenu.show();
+    h.timestamp("dmenu.show()");
+    dmenu.fitToContent();
+    h.timestamp("dmenu.fitToContent()");
+    return app.exec();
 }
